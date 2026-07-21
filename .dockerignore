@@ -1,0 +1,41 @@
+# Docker build context ignores — keeps build fast
+node_modules/
+frontend/node_modules/
+.git/
+.github/
+__pycache__/
+*.pyc
+*.pyo
+.env
+.env.*
+!.env.example
+
+# Large gas sensor files (~1.2GB combined) — not needed at runtime
+data/raw/ethylene_CO.txt
+data/raw/ethylene_methane.txt
+data/raw/data/
+
+# Keep ai4i2020.csv (522KB) — used for equipment telemetry
+
+# Backups and reports
+backups/
+reports/
+*.sql
+*.sql.gz
+
+# IDE / editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+backend_logs*.txt
+
+# Docker volumes
+postgres_data/
+
+# OS files
+Thumbs.db
+.DS_Store

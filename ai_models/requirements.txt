@@ -1,0 +1,6 @@
+scikit-learn
+ultralytics
+openai
+requests
+psycopg2-binary
+sqlalchemy
