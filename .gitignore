@@ -1,0 +1,40 @@
+# Python/Celery
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.venv/
+venv/
+ENV/
+env/
+
+# Databases
+*.db
+*.sqlite
+
+# IDEs
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Frontend build outputs
+dist/
+node_modules/
+.eslintcache
+
+# AI Models saved state
+ai_models/saved/*.pkl
+
+# Large data files (600MB+ each — too big for GitHub)
+data/raw/ethylene_CO.txt
+data/raw/ethylene_methane.txt
+data/raw/data/
+
+# Backups
+backups/
+*.sql.gz
+backup.sql

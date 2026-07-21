@@ -1,0 +1,37 @@
+FROM python:3.11-slim
+
+# System deps — use Debian Trixie package names (python:3.11-slim base)
+# libgl1-mesa-glx was renamed to libgl1 in Trixie
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libgl1 \
+    libglib2.0-0 \
+    gcc \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Install Python dependencies first (cached layer)
+COPY backend/requirements.txt ./requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy ALL packages the backend imports:
+#   - backend/      → the FastAPI application
+#   - ai_models/    → Isolation Forest, LLM engine, risk scorer
+#   - rule_engine/  → deterministic safety rules + state aggregator
+#   - data/         → synthetic data generator + schemas
+COPY backend/     ./backend/
+COPY ai_models/   ./ai_models/
+COPY rule_engine/ ./rule_engine/
+COPY data/        ./data/
+
+# Create required runtime directories
+RUN mkdir -p /app/ai_models/saved /app/data/processed /app/data/synthetic /app/reports
+
+# Set PYTHONPATH so all packages are importable without sys.path hacks
+ENV PYTHONPATH=/app:/app/backend
+
+WORKDIR /app/backend
+
+EXPOSE 8000
+
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
