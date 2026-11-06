@@ -1,0 +1,27 @@
+{
+  "export": {
+    "success": true,
+    "onnx_path": "ai_models\\saved\\anomaly_detector.onnx",
+    "input_name": "float_input",
+    "output_names": [
+      "label",
+      "scores",
+      "score_samples"
+    ],
+    "opset": 14,
+    "features": 6
+  },
+  "parity": {
+    "samples_tested": 1000,
+    "prediction_agreement": 1.0,
+    "mean_score_difference": 0.5687676941736963,
+    "max_score_difference": 0.5687677785059737,
+    "parity_passed": "False",
+    "tolerance": 0.0001
+  },
+  "benchmark": {
+    "iterations": 10000,
+    "latency_ms": 1.957,
+    "throughput_per_sec": 511.0
+  }
+}
