@@ -71,11 +71,12 @@ def export_isolation_forest_to_onnx(
 
     print(f"📦 Converting to ONNX (opset={opset})...")
     try:
+        from sklearn.ensemble import IsolationForest
         onnx_model = convert_sklearn(
             pipeline,
             initial_types=initial_type,
-            target_opset=opset,
-            options={IsolationForest: {"zipmap": False}},
+            target_opset={"": opset, "ai.onnx.ml": 3},
+            options={IsolationForest: {"score_samples": True}},
         )
     except Exception as e:
         print(f"❌ ONNX conversion failed: {e}")
@@ -140,27 +141,27 @@ def verify_onnx_parity(
     sklearn_preds = []
     sklearn_scores = []
     for sample in test_samples:
-        is_anomaly, score = detector.predict(
-            gas_ch4=float(sample[0]),
-            gas_co=float(sample[1]),
-            gas_h2s=float(sample[2]),
-            temperature=float(sample[3]),
-            ts=None,  # hour/weekday from sample[4], sample[5]
-        )
-        # Note: detector.predict uses hour/weekday from datetime, not from sample
-        # For fair comparison, we need to use the same hour/weekday
-        # Let's just use the decision_function directly
+        # Use decision_function directly for fair comparison with ONNX score_samples
         X_scaled = detector.scaler.transform(sample.reshape(1, -1))
         raw_score = detector.model.decision_function(X_scaled)[0]
         pred = detector.model.predict(X_scaled)[0]
         sklearn_preds.append(pred == -1)
-        sklearn_scores.append(float(np.clip((-raw_score + 0.5) / 1.0, 0.0, 1.0)))
+        # Use raw decision_function (same as ONNX score_samples)
+        sklearn_scores.append(float(raw_score))
 
     # ONNX predictions
     onnx_outputs = sess.run(None, {input_name: test_samples})
-    # IsolationForest in ONNX outputs: [predictions, scores] typically
-    # Let's check the output structure
-    if len(onnx_outputs) == 2:
+    # IsolationForest in ONNX outputs: [label, scores, score_samples]
+    # label: -1 for anomaly, 1 for normal
+    # scores: anomaly scores (negative = more anomalous)
+    # score_samples: same as sklearn decision_function
+    if len(onnx_outputs) >= 3:
+        onnx_preds_raw = onnx_outputs[0]
+        onnx_scores_raw = onnx_outputs[1]
+        onnx_score_samples = onnx_outputs[2]
+        onnx_preds = onnx_preds_raw.flatten() == -1
+        onnx_scores = onnx_score_samples.flatten()  # This matches sklearn decision_function
+    elif len(onnx_outputs) == 2:
         onnx_preds_raw, onnx_scores_raw = onnx_outputs
         onnx_preds = onnx_preds_raw.flatten() == -1
         onnx_scores = onnx_scores_raw.flatten()
