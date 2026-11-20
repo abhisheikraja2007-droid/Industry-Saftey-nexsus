@@ -38,3 +38,10 @@ data/raw/data/
 backups/
 *.sql.gz
 backup.sql
+
+.env
+.env.local
+*.env
+!.env.example
+__pycache__/
+*.pyc
